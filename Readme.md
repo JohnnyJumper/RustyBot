@@ -12,8 +12,8 @@ Rusty-bot is a Discord bot that monitors users in a Discord server and stores in
 
 To install Rusty-bot, follow these steps:
 
-1. Clone the repository: `git clone https://github.com/your-username/rusty-bot.git`
-2. Navigate to the project directory: `cd rusty-bot`
+1. Clone the repository: `git clone https://github.com/JohnnyJumper/RustyBot.git`
+2. Navigate to the project directory: `cd RustyBot`
 3. Install dependencies: `cargo build`
 4. Set up the environment variables for the bot and database
 5. Run the bot: `cargo run`
