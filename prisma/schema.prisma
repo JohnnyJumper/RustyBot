@@ -1,0 +1,18 @@
+generator client {
+    // Corresponds to the cargo alias
+    provider      = "cargo prisma"
+    // The location to generate the client. Is relative to the position of the schema
+    output        = "../src/prisma.rs"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model users {
+  discord_user_id BigInt  @id(map: "users_pk") @default(autoincrement())
+  username        String  @db.VarChar
+  name            String? @db.VarChar
+  reputation      Decimal @default(100) @db.Decimal
+}

@@ -25,6 +25,8 @@ The following environment variables are required for Rusty-bot to function prope
 - `DISCORD_TOKEN`: Discord bot token
 - `DATABASE_URL`: URL of the external database
 
+Add thouse to .env in root folder
+
 ## Usage
 
 Rusty-bot will automatically monitor users in the Discord server it is added to. The bot will store information about each user's reputation in the external database. This information can be accessed and manipulated via the Prisma API.
