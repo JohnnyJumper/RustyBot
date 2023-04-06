@@ -1,5 +1,6 @@
 [package]
 name = "rusty-bot"
+default-run = "rusty-bot"
 version = "0.1.0"
 edition = "2021"
 
@@ -12,3 +13,4 @@ serde = "1.0.159"
 
 tokio = {features=["macros","rt-multi-thread"], version = "1.17.0"}
 tracing = "0.1.36"
+serenity = "0.11.5"
