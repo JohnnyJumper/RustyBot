@@ -186,10 +186,10 @@ pub mod user {
             OrderByParam::Reputation(direction)
         }
         pub fn equals(value: f64) -> WhereParam {
-            WhereParam::Reputation(_prisma::read_filters::DecimalFilter::Equals(value))
+            WhereParam::Reputation(_prisma::read_filters::FloatFilter::Equals(value))
         }
         ::prisma_client_rust::scalar_where_param_fns!(
-            _prisma::read_filters::DecimalFilter,
+            _prisma::read_filters::FloatFilter,
             Reputation,
             {
                 fn in_vec(_: Vec<f64>) -> InVec;
@@ -365,7 +365,7 @@ pub mod user {
         #[serde(rename = "username")]
         pub username: String,
         #[serde(rename = "reputation")]
-        pub reputation: String,
+        pub reputation: f64,
         #[serde(rename = "discord_user_id")]
         pub discord_user_id: String,
     }
@@ -450,7 +450,7 @@ pub mod user {
         And(Vec<WhereParam>),
         Id(_prisma::read_filters::BigIntFilter),
         Username(_prisma::read_filters::StringFilter),
-        Reputation(_prisma::read_filters::DecimalFilter),
+        Reputation(_prisma::read_filters::FloatFilter),
         DiscordUserId(_prisma::read_filters::StringFilter),
     }
     impl ::prisma_client_rust::WhereInput for WhereParam {
@@ -989,7 +989,7 @@ pub mod _prisma {
             }
         }
         #[derive(Clone)]
-        pub enum DecimalFilter {
+        pub enum FloatFilter {
             Equals(f64),
             InVec(Vec<f64>),
             NotInVec(Vec<f64>),
@@ -999,7 +999,7 @@ pub mod _prisma {
             Gte(f64),
             Not(f64),
         }
-        impl Into<::prisma_client_rust::SerializedWhereValue> for DecimalFilter {
+        impl Into<::prisma_client_rust::SerializedWhereValue> for FloatFilter {
             fn into(self) -> ::prisma_client_rust::SerializedWhereValue {
                 match self { Self :: Equals (value) => :: prisma_client_rust :: SerializedWhereValue :: Object (vec ! [("equals" . to_string () , :: prisma_client_rust :: PrismaValue :: Float (< :: prisma_client_rust :: bigdecimal :: BigDecimal as :: prisma_client_rust :: bigdecimal :: FromPrimitive > :: from_f64 (value) . unwrap () . normalized ()))]) , Self :: InVec (value) => :: prisma_client_rust :: SerializedWhereValue :: Object (vec ! [("in" . to_string () , :: prisma_client_rust :: PrismaValue :: List (value . into_iter () . map (| value | :: prisma_client_rust :: PrismaValue :: Float (< :: prisma_client_rust :: bigdecimal :: BigDecimal as :: prisma_client_rust :: bigdecimal :: FromPrimitive > :: from_f64 (value) . unwrap () . normalized ())) . collect ()))]) , Self :: NotInVec (value) => :: prisma_client_rust :: SerializedWhereValue :: Object (vec ! [("notIn" . to_string () , :: prisma_client_rust :: PrismaValue :: List (value . into_iter () . map (| value | :: prisma_client_rust :: PrismaValue :: Float (< :: prisma_client_rust :: bigdecimal :: BigDecimal as :: prisma_client_rust :: bigdecimal :: FromPrimitive > :: from_f64 (value) . unwrap () . normalized ())) . collect ()))]) , Self :: Lt (value) => :: prisma_client_rust :: SerializedWhereValue :: Object (vec ! [("lt" . to_string () , :: prisma_client_rust :: PrismaValue :: Float (< :: prisma_client_rust :: bigdecimal :: BigDecimal as :: prisma_client_rust :: bigdecimal :: FromPrimitive > :: from_f64 (value) . unwrap () . normalized ()))]) , Self :: Lte (value) => :: prisma_client_rust :: SerializedWhereValue :: Object (vec ! [("lte" . to_string () , :: prisma_client_rust :: PrismaValue :: Float (< :: prisma_client_rust :: bigdecimal :: BigDecimal as :: prisma_client_rust :: bigdecimal :: FromPrimitive > :: from_f64 (value) . unwrap () . normalized ()))]) , Self :: Gt (value) => :: prisma_client_rust :: SerializedWhereValue :: Object (vec ! [("gt" . to_string () , :: prisma_client_rust :: PrismaValue :: Float (< :: prisma_client_rust :: bigdecimal :: BigDecimal as :: prisma_client_rust :: bigdecimal :: FromPrimitive > :: from_f64 (value) . unwrap () . normalized ()))]) , Self :: Gte (value) => :: prisma_client_rust :: SerializedWhereValue :: Object (vec ! [("gte" . to_string () , :: prisma_client_rust :: PrismaValue :: Float (< :: prisma_client_rust :: bigdecimal :: BigDecimal as :: prisma_client_rust :: bigdecimal :: FromPrimitive > :: from_f64 (value) . unwrap () . normalized ()))]) , Self :: Not (value) => :: prisma_client_rust :: SerializedWhereValue :: Object (vec ! [("not" . to_string () , :: prisma_client_rust :: PrismaValue :: Float (< :: prisma_client_rust :: bigdecimal :: BigDecimal as :: prisma_client_rust :: bigdecimal :: FromPrimitive > :: from_f64 (value) . unwrap () . normalized ()))]) }
             }
