@@ -1,24 +1,44 @@
 mod commands;
+mod prisma;
 
 use std::env;
 
+use prisma::PrismaClient;
+use prisma_client_rust::NewClientError;
 use serenity::async_trait;
 use serenity::model::application::interaction::Interaction;
 use serenity::model::gateway::Ready;
 use serenity::model::id::GuildId;
+use serenity::model::prelude::interaction::application_command::CommandDataOption;
 use serenity::model::prelude::interaction::InteractionResponseType;
+use serenity::model::user::User;
 use serenity::prelude::*;
 
-struct Handler;
+use crate::commands::command::{CommandContext, ICommand};
+
+struct Handler {
+    client: PrismaClient,
+}
+
+impl Handler {
+    pub async fn new() -> Self {
+        Self {
+            client: PrismaClient::_builder().build().await.unwrap(),
+        }
+    }
+}
 
 #[async_trait]
 impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::ApplicationCommand(command) = interaction {
+            let command_context =
+                CommandContext::new(&command.data.options, &command.user, &self.client);
             println!("Received command int eraction: {:#?}", command);
             let content = match command.data.name.as_str() {
-                "ping" => commands::ping::run(&command.data.options),
-                "me" => commands::me::run(&command.user),
+                "ping" => commands::ping::Command::run(command_context).await,
+                "me" => commands::me::Command::run(command_context).await,
+                "join" => commands::join::Command::run(command_context).await,
                 _ => "not implemented :(".to_string(),
             };
 
@@ -46,8 +66,11 @@ impl EventHandler for Handler {
         );
 
         let commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
-            commands.create_application_command(|command| commands::ping::register(command));
-            commands.create_application_command(|command| commands::me::register(command))
+            commands
+                .create_application_command(|command| commands::ping::Command::register(command));
+            commands.create_application_command(|command| commands::me::Command::register(command));
+            commands
+                .create_application_command(|command| commands::join::Command::register(command))
         })
         .await;
 
@@ -67,8 +90,10 @@ async fn main() {
         | GatewayIntents::DIRECT_MESSAGES
         | GatewayIntents::MESSAGE_CONTENT;
 
+    let handler = Handler::new().await;
+
     let mut client = Client::builder(token, intents)
-        .event_handler(Handler)
+        .event_handler(handler)
         .await
         .expect("Error creating a client");
 

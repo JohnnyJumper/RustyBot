@@ -1,10 +1,19 @@
+use std::error::Error;
+
+use async_trait::async_trait;
 use serenity::builder::CreateApplicationCommand;
-use serenity::model::prelude::interaction::application_command::CommandDataOption;
 
-pub fn run(_options: &[CommandDataOption]) -> String {
-    "Hey, I'm alive!".to_string()
-}
+use super::command::{CommandContext, ICommand};
 
-pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
-    command.name("ping").description("A ping command")
+pub struct Command;
+
+#[async_trait]
+impl ICommand for Command {
+    async fn run(_context: CommandContext<'async_trait>) -> String {
+        "Hey, I'm alive!".to_string()
+    }
+
+    fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
+        command.name("ping").description("A ping command")
+    }
 }

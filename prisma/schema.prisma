@@ -8,9 +8,9 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model users {
-  discord_user_id BigInt  @id(map: "users_pk") @default(autoincrement())
+model user {
+  id              BigInt  @id(map: "newtable_pk") @default(autoincrement())
   username        String  @db.VarChar
-  name            String? @db.VarChar
   reputation      Decimal @default(100) @db.Decimal
+  discord_user_id String  @db.VarChar
 }
