@@ -42,7 +42,7 @@ impl EventHandler for Handler {
         if let Interaction::ApplicationCommand(command) = interaction {
             let command_context =
                 CommandContext::new(&command.data.options, &command.user, &self.client);
-            println!("Received command int eraction: {:#?}", command);
+            println!("Received command interaction: {:#?}", command);
             let content = run_command!(command.data.name, command_context, [ping, join, me]);
 
             if let Err(why) = command
