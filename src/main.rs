@@ -4,14 +4,11 @@ mod prisma;
 use std::env;
 
 use prisma::PrismaClient;
-use prisma_client_rust::NewClientError;
 use serenity::async_trait;
 use serenity::model::application::interaction::Interaction;
 use serenity::model::gateway::Ready;
 use serenity::model::id::GuildId;
-use serenity::model::prelude::interaction::application_command::CommandDataOption;
 use serenity::model::prelude::interaction::InteractionResponseType;
-use serenity::model::user::User;
 use serenity::prelude::*;
 
 use crate::commands::command::{CommandContext, ICommand};

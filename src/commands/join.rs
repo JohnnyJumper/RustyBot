@@ -1,11 +1,6 @@
-use std::error::Error;
-
 use async_trait::async_trait;
 use serenity::builder::CreateApplicationCommand;
-
 use serenity::utils::MessageBuilder;
-
-use crate::prisma::user;
 
 use super::command::CommandContext;
 use super::command::ICommand;

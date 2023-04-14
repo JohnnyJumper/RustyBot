@@ -1,9 +1,7 @@
 use crate::prisma::user;
-use crate::prisma::PrismaClient;
 use async_trait::async_trait;
 use serenity::builder::CreateApplicationCommand;
 use serenity::utils::MessageBuilder;
-use std::error::Error;
 
 use super::command::{CommandContext, ICommand};
 
