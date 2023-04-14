@@ -1,5 +1,3 @@
-use std::error::Error;
-
 use serenity::{
     async_trait,
     builder::CreateApplicationCommand,

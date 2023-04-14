@@ -19,11 +19,7 @@ impl ICommand for Command {
         let user = context.user;
         let result = client
             .user()
-            .create(
-                user.name.clone(),
-                user.id.to_string(),
-                vec![user::reputation::set(100.0 as f64)],
-            )
+            .create(user.name.clone(), user.id.to_string(), vec![])
             .exec()
             .await;
 

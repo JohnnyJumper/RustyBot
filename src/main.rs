@@ -28,6 +28,17 @@ impl Handler {
     }
 }
 
+macro_rules! run_command {
+    ($command_name: expr, $command_context: expr, [$($command:ident),*]) => {
+        match $command_name.as_str() {
+            $(
+                stringify!($command) => commands::$command::Command::run($command_context).await,
+            )+
+            &_ => "Unknown command".to_string()
+        }
+    };
+}
+
 #[async_trait]
 impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
@@ -35,12 +46,7 @@ impl EventHandler for Handler {
             let command_context =
                 CommandContext::new(&command.data.options, &command.user, &self.client);
             println!("Received command int eraction: {:#?}", command);
-            let content = match command.data.name.as_str() {
-                "ping" => commands::ping::Command::run(command_context).await,
-                "me" => commands::me::Command::run(command_context).await,
-                "join" => commands::join::Command::run(command_context).await,
-                _ => "not implemented :(".to_string(),
-            };
+            let content = run_command!(command.data.name, command_context, [ping, join, me]);
 
             if let Err(why) = command
                 .create_interaction_response(&ctx.http, |response| {
