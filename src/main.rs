@@ -36,6 +36,26 @@ macro_rules! run_command {
     };
 }
 
+macro_rules! register_slash_commands {
+    ($commands:expr, [$($cmd:ident),+]) => {
+        $(
+            $commands.create_application_command(|command| commands::$cmd::Command::register(command));
+        )+
+    };
+}
+
+async fn register_commands(ctx: &Context, guild_id: GuildId) {
+    let commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
+        register_slash_commands!(commands, [ping, me, join]);
+        commands
+    })
+    .await;
+    println!(
+        "I now have the following guild slash commands: {:#?}",
+        commands
+    );
+}
+
 #[async_trait]
 impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
@@ -68,19 +88,7 @@ impl EventHandler for Handler {
                 .expect("GUILD_ID must be an integer"),
         );
 
-        let commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
-            commands
-                .create_application_command(|command| commands::ping::Command::register(command));
-            commands.create_application_command(|command| commands::me::Command::register(command));
-            commands
-                .create_application_command(|command| commands::join::Command::register(command))
-        })
-        .await;
-
-        println!(
-            "I now have the following guild slash commands: {:#?}",
-            commands
-        );
+        register_commands(&ctx, guild_id).await;
     }
 }
 
