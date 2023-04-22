@@ -1,5 +1,6 @@
 mod commands;
 mod prisma;
+mod utils;
 
 use std::env;
 
@@ -11,7 +12,10 @@ use serenity::model::id::GuildId;
 use serenity::model::prelude::interaction::InteractionResponseType;
 use serenity::prelude::*;
 
-use crate::commands::command::{CommandContext, ICommand};
+use crate::{
+    commands::command::{CommandContext, ICommand},
+    utils::role::{identify_role, UserRole},
+};
 
 struct Handler {
     client: PrismaClient,
@@ -60,9 +64,13 @@ async fn register_commands(ctx: &Context, guild_id: GuildId) {
 impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::ApplicationCommand(command) = interaction {
+            let role = identify_role(&command.user, &ctx.http).await;
             let command_context =
-                CommandContext::new(&command.data.options, &command.user, &self.client);
-            println!("Received command interaction: {:#?}", command);
+                CommandContext::new(&command.data.options, &command.user, role, &self.client);
+            println!(
+                "Received command interaction: {:#?} with options: {:#?}",
+                command.data.name, command.data.options
+            );
             let content = run_command!(command.data.name, command_context, [ping, join, me]);
 
             if let Err(why) = command
