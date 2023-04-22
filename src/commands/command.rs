@@ -5,6 +5,7 @@ use serenity::{
     builder::CreateApplicationCommand,
     http::Http,
     model::{prelude::interaction::application_command::CommandDataOption, user::User},
+    prelude::Context,
 };
 
 use crate::utils::role::UserRole;

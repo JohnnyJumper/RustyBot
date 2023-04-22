@@ -10,6 +10,7 @@ use serenity::async_trait;
 use serenity::model::application::interaction::Interaction;
 use serenity::model::gateway::Ready;
 use serenity::model::id::GuildId;
+use serenity::model::id::RoleId;
 use serenity::model::prelude::interaction::InteractionResponseType;
 use serenity::prelude::*;
 
@@ -20,12 +21,18 @@ use crate::{
 
 struct Handler {
     client: PrismaClient,
+    discord_token: String,
+    guild_id: GuildId,
+    overlord_role: RoleId,
 }
 
 impl Handler {
-    pub async fn new() -> Self {
+    pub async fn new(token: String, guild_id: GuildId, overlord_role: RoleId) -> Handler {
         Self {
             client: PrismaClient::_builder().build().await.unwrap(),
+            discord_token: token,
+            guild_id,
+            overlord_role,
         }
     }
 }
@@ -51,7 +58,7 @@ macro_rules! register_slash_commands {
 
 async fn register_commands(ctx: &Context, guild_id: GuildId) {
     let commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
-        register_slash_commands!(commands, [me, add_members]);
+        register_slash_commands!(commands, [me, add_members, give_kudos]);
         commands
     })
     .await;
@@ -120,14 +127,27 @@ impl EventHandler for Handler {
 async fn main() {
     let token =
         env::var("DISCORD_TOKEN").expect("Expected a token in the DISCORD_TOKEN environment");
+    let guild_id = GuildId(
+        env::var("GUILD_ID")
+            .expect("Expected GUILD_ID in environment")
+            .parse()
+            .expect("GUILD_ID must be an integer"),
+    );
+
+    let overlord_role = RoleId(
+        env::var("ADMIN_OVERLORD_ROLE")
+            .expect("Expected ADMIN_OVERLORD_ROLE in enviroment")
+            .parse()
+            .expect("ADMIN_OVERLORD_ROLE must be"),
+    );
 
     let intents = GatewayIntents::GUILD_MESSAGES
         | GatewayIntents::DIRECT_MESSAGES
         | GatewayIntents::MESSAGE_CONTENT;
 
-    let handler = Handler::new().await;
+    let handler = Handler::new(token, guild_id, overlord_role).await;
 
-    let mut client = Client::builder(token, intents)
+    let mut client = Client::builder(&handler.discord_token, intents)
         .event_handler(handler)
         .await
         .expect("Error creating a client");

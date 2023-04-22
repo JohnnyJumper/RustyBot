@@ -2683,6 +2683,7 @@ name = "rusty-bot"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "chrono",
  "lazy_static",
  "prisma-client-rust",
  "prisma-client-rust-cli",

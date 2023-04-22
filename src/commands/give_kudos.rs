@@ -1,8 +1,4 @@
-use crate::prisma::{
-    user,
-    user_kudos::{self, from},
-    PrismaClient,
-};
+use crate::prisma::{self, kudos, user, PrismaClient};
 use async_trait::async_trait;
 use prisma_client_rust::{Direction, QueryError};
 use serenity::{
@@ -42,9 +38,9 @@ impl Command {
 
     async fn has_given_kudos_today(prisma: &PrismaClient, discord_user_id: String) -> bool {
         let latest_kudos = prisma
-            .user_kudos()
-            .find_many(vec![user_kudos::from_id::equals(user_id)])
-            .order_by(user_kudos::timestamp::order(Direction::Desc))
+            .kudos()
+            .find_many(vec![kudos::from_discord_id::equals(discord_user_id)])
+            .order_by(kudos::timestamp::order(Direction::Desc))
             .take(1)
             .exec()
             .await;
@@ -79,6 +75,7 @@ impl UserCommand for Command {
     async fn run(context: CommandContext<'async_trait>) -> String {
         let prisma = &context.client;
         let options = &context.options;
+        let sender = &context.user;
 
         let receiver = Command::unwrap_option(&options);
         let mut response = MessageBuilder::new();
@@ -87,29 +84,45 @@ impl UserCommand for Command {
                 let receiver = user;
 
                 let has_given_kudos_today =
-                    Command::has_given_kudos_today(prisma, context.user.id.to_string());
+                    Command::has_given_kudos_today(prisma, sender.id.to_string()).await;
 
-                if let _False = Command::has_given_kudos_today(prisma, context.user.id.into()) {
-                    let create_kudos = prisma
-                        .user_kudos()
-                        .create(
-                            user::discord_user_id::equals(context.user.id.to_string()),
-                            user::discord_user_id::equals(receiver.id.to_string()),
-                            vec![],
-                        )
-                        .exec()
-                        .await;
-                    if let Ok(created_kudos) = create_kudos {
-                        let _ = prisma
-                            .user()
-                            .update(
+                if !has_given_kudos_today {
+                    let db_response = prisma
+                        ._batch((
+                            prisma.kudos().create(
+                                user::discord_user_id::equals(sender.id.to_string()),
                                 user::discord_user_id::equals(receiver.id.to_string()),
-                                vec![user::reputation::increment(1.0)],
-                            )
-                            .exec()
-                            .await;
-                        response.push("Kudos has been given");
+                                vec![],
+                            ),
+                            prisma
+                                .user()
+                                .update(
+                                    user::discord_user_id::equals(receiver.id.to_string()),
+                                    vec![user::reputation::increment(1.0)],
+                                )
+                                .select(user::select!({ reputation })),
+                        ))
+                        .await;
+
+                    match db_response {
+                        Ok(data) => {
+                            response
+                                .push("kudos has been given succesfully to ")
+                                .push_bold_line_safe(receiver.name)
+                                .push(" resulting in ")
+                                .push_bold_safe(data.1.reputation)
+                                .push(" reputation");
+                        }
+                        Err(why) => {
+                            response
+                                .push("Something went wrong with the following error: \n")
+                                .push_bold_line_safe(why);
+                        }
                     }
+                } else {
+                    response
+                        .push("Only one kudos per day \n")
+                        .push_bold_line_safe("Try again in tomorrow");
                 }
             }
             None => {
