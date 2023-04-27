@@ -62,8 +62,8 @@ impl<T: AdminCommand + Sync> UserCommand for T {
         match user_role {
             UserRole::Admin => T::admin_logic(context).await,
             _ => MessageBuilder::new()
-                .push("Only bot lords can use this command")
-                .push("This action will be noted")
+                .push("Only bot overseers allowed to use this command\n")
+                .push_bold_line_safe("This action will be noted")
                 .build(),
         }
     }
