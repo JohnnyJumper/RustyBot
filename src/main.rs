@@ -13,8 +13,8 @@ use serenity::model::prelude::interaction::InteractionResponseType;
 use serenity::prelude::*;
 
 use crate::{
-    commands::command::{CommandContext, ICommand},
-    utils::role::{identify_role, UserRole},
+    commands::command::{CommandContext, UserCommand},
+    utils::role::{identify_role, UserRole, GUILD_ID},
 };
 
 struct Handler {
@@ -43,14 +43,14 @@ macro_rules! run_command {
 macro_rules! register_slash_commands {
     ($commands:expr, [$($cmd:ident),+]) => {
         $(
-            $commands.create_application_command(|command| commands::$cmd::Command::register(command));
+            $commands.create_application_command(|command| crate::commands::$cmd::Command::register(command, stringify!($cmd)));
         )+
     };
 }
 
 async fn register_commands(ctx: &Context, guild_id: GuildId) {
     let commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
-        register_slash_commands!(commands, [ping, me, join]);
+        register_slash_commands!(commands, [me, add_members]);
         commands
     })
     .await;
@@ -64,15 +64,39 @@ async fn register_commands(ctx: &Context, guild_id: GuildId) {
 impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::ApplicationCommand(command) = interaction {
-            let role = identify_role(&command.user, &ctx.http).await;
-            let command_context =
-                CommandContext::new(&command.data.options, &command.user, role, &self.client);
+            let role = match identify_role(&command.user, &ctx.http).await {
+                Ok(role) => role,
+                Err(why) => UserRole::Unknown(why.to_string()),
+            };
+
+            if let UserRole::Unknown(why) = role {
+                let _ = command
+                    .create_interaction_response(&ctx.http, |response| {
+                        response
+                            .kind(InteractionResponseType::ChannelMessageWithSource)
+                            .interaction_response_data(|message| {
+                                message.content(String::from(format!(
+                                "Sorry, I can't process what species are you? (Unknown Role) [{}]",
+                                why
+                            )))
+                            })
+                    })
+                    .await;
+                return;
+            }
+
+            let command_context = CommandContext::new(
+                &command.data.options,
+                &command.user,
+                role,
+                &self.client,
+                &ctx.http,
+            );
             println!(
                 "Received command interaction: {:#?} with options: {:#?}",
                 command.data.name, command.data.options
             );
-            let content = run_command!(command.data.name, command_context, [ping, join, me]);
-
+            let content = run_command!(command.data.name, command_context, [me, add_members]);
             if let Err(why) = command
                 .create_interaction_response(&ctx.http, |response| {
                     response
@@ -89,14 +113,7 @@ impl EventHandler for Handler {
     async fn ready(&self, ctx: Context, ready: Ready) {
         println!("{} is connected!", ready.user.name);
 
-        let guild_id = GuildId(
-            env::var("GUILD_ID")
-                .expect("Expected GUILD_ID in environment")
-                .parse()
-                .expect("GUILD_ID must be an integer"),
-        );
-
-        register_commands(&ctx, guild_id).await;
+        register_commands(&ctx, *GUILD_ID).await;
     }
 }
 

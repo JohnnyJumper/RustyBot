@@ -1,14 +1,13 @@
 use crate::prisma::user;
 use async_trait::async_trait;
-use serenity::builder::CreateApplicationCommand;
 use serenity::utils::MessageBuilder;
 
-use super::command::{CommandContext, ICommand};
+use super::command::{CommandContext, UserCommand};
 
 pub struct Command;
 
 #[async_trait]
-impl ICommand for Command {
+impl UserCommand for Command {
     async fn run(context: CommandContext<'async_trait>) -> String {
         let client = context.client;
         let user = context.user;
@@ -45,9 +44,5 @@ impl ICommand for Command {
                 .build(),
         };
         response
-    }
-
-    fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
-        command.name("me").description("show my reputation")
     }
 }
