@@ -1,8 +1,6 @@
-use crate::prisma::user;
-use async_trait::async_trait;
-use serenity::utils::MessageBuilder;
-
 use super::command::{CommandContext, UserCommand};
+use crate::{prisma::user, responses};
+use async_trait::async_trait;
 
 pub struct Command;
 
@@ -21,27 +19,13 @@ impl UserCommand for Command {
 
         let response = match db_user {
             Ok(user_option) => match user_option {
-                Some(user) => {
-                    let reputation = user.reputation.to_string();
-                    MessageBuilder::new()
-                        .push("User ")
-                        .push_bold_safe(&user.username)
-                        .push(" has the following reputation of ")
-                        .push_bold_safe(&reputation)
-                        .build()
-                }
-                None => MessageBuilder::new()
-                    .push("User ")
-                    .push_bold_line_safe(&user.name)
-                    .push(" is not registered, talk with admins")
-                    .build(),
+                Some(user) => responses::general::me_command_response(
+                    &user.username,
+                    &user.reputation.to_string(),
+                ),
+                None => responses::errors::not_registered_message(&user.name),
             },
-            Err(why) => MessageBuilder::new()
-                .push("Error looking into db for user ")
-                .push_bold_line_safe(&user.name)
-                .push(" : ")
-                .push(why)
-                .build(),
+            Err(why) => responses::errors::user_not_found_message(&user.name, why.to_string()),
         };
         response
     }

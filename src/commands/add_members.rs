@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use serenity::utils::MessageBuilder;
 
-use crate::utils::role::GUILD_ID;
+use crate::{responses, utils::role::GUILD_ID};
 
 use super::command::{AdminCommand, CommandContext};
 
@@ -43,10 +43,7 @@ impl AdminCommand for Command {
                 }
                 response.build()
             }
-            Err(why) => MessageBuilder::new()
-                .push("Error retriving guild members: ")
-                .push_italic_safe(why)
-                .build(),
+            Err(why) => responses::errors::error_retriving_guild_members_message(why.to_string()),
         }
     }
 }

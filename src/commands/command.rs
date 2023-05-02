@@ -5,11 +5,10 @@ use serenity::{
     builder::CreateApplicationCommand,
     http::Http,
     model::{prelude::interaction::application_command::CommandDataOption, user::User},
-    utils::MessageBuilder,
 };
 
-use crate::prisma::PrismaClient;
 use crate::utils::role::UserRole;
+use crate::{prisma::PrismaClient, responses};
 
 pub struct CommandContext<'a> {
     pub options: &'a Vec<CommandDataOption>,
@@ -61,10 +60,7 @@ impl<T: AdminCommand + Sync> UserCommand for T {
         let user_role = &context.user_role;
         match user_role {
             UserRole::Admin => T::admin_logic(context).await,
-            _ => MessageBuilder::new()
-                .push("Only bot overseers allowed to use this command\n")
-                .push_bold_line_safe("This action will be noted")
-                .build(),
+            _ => responses::errors::only_admin_message(),
         }
     }
 }

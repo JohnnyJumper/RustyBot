@@ -1,5 +1,6 @@
 mod commands;
 mod prisma;
+mod responses;
 mod utils;
 
 use std::env;
@@ -75,10 +76,8 @@ impl EventHandler for Handler {
                         response
                             .kind(InteractionResponseType::ChannelMessageWithSource)
                             .interaction_response_data(|message| {
-                                message.content(String::from(format!(
-                                "Sorry, I can't process what species are you? (Unknown Role) [{}]",
-                                why
-                            )))
+                                message
+                                    .content(crate::responses::general::unknown_role_message(why))
                             })
                     })
                     .await;
