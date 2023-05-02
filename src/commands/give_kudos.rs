@@ -112,7 +112,7 @@ impl UserCommand for Command {
                             response
                                 .push("kudos has been given succesfully to ")
                                 .push_bold_line_safe(receiver.name)
-                                .push(" resulting in ")
+                                .push("resulting in ")
                                 .push_bold_safe(data.1.reputation)
                                 .push(" reputation");
                         }
