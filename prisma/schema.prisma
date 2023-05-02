@@ -12,7 +12,7 @@ model user {
   id              BigInt  @id(map: "newtable_pk") @default(autoincrement())
   username        String  @db.VarChar
   reputation      Float @default(100.0)
-  sent_kudos           kudos[] @relation("sent_kudos")
+  sent_kudos      kudos[] @relation("sent_kudos")
   received_kudos  kudos[] @relation("received_kudos")
   discord_user_id String  @db.VarChar @unique
 

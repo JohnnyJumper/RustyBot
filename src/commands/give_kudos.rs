@@ -44,9 +44,12 @@ impl Command {
             .take(1)
             .exec()
             .await;
-
+        println!("{:?}", latest_kudos);
         match latest_kudos {
             Ok(kudos) => {
+                if kudos.len() == 0 {
+                    return false;
+                }
                 let kudos_timestamp = match kudos.get(0) {
                     Some(kudos) => Utc.timestamp_nanos(kudos.timestamp.timestamp_nanos()),
                     None => Utc::now(),

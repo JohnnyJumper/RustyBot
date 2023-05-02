@@ -21,18 +21,12 @@ use crate::{
 
 struct Handler {
     client: PrismaClient,
-    discord_token: String,
-    guild_id: GuildId,
-    overlord_role: RoleId,
 }
 
 impl Handler {
-    pub async fn new(token: String, guild_id: GuildId, overlord_role: RoleId) -> Handler {
+    pub async fn new() -> Handler {
         Self {
             client: PrismaClient::_builder().build().await.unwrap(),
-            discord_token: token,
-            guild_id,
-            overlord_role,
         }
     }
 }
@@ -102,7 +96,11 @@ impl EventHandler for Handler {
                 "Received command interaction: {:#?} with options: {:#?}",
                 command.data.name, command.data.options
             );
-            let content = run_command!(command.data.name, command_context, [me, add_members]);
+            let content = run_command!(
+                command.data.name,
+                command_context,
+                [me, add_members, give_kudos]
+            );
             if let Err(why) = command
                 .create_interaction_response(&ctx.http, |response| {
                     response
@@ -127,27 +125,14 @@ impl EventHandler for Handler {
 async fn main() {
     let token =
         env::var("DISCORD_TOKEN").expect("Expected a token in the DISCORD_TOKEN environment");
-    let guild_id = GuildId(
-        env::var("GUILD_ID")
-            .expect("Expected GUILD_ID in environment")
-            .parse()
-            .expect("GUILD_ID must be an integer"),
-    );
-
-    let overlord_role = RoleId(
-        env::var("ADMIN_OVERLORD_ROLE")
-            .expect("Expected ADMIN_OVERLORD_ROLE in enviroment")
-            .parse()
-            .expect("ADMIN_OVERLORD_ROLE must be"),
-    );
 
     let intents = GatewayIntents::GUILD_MESSAGES
         | GatewayIntents::DIRECT_MESSAGES
         | GatewayIntents::MESSAGE_CONTENT;
 
-    let handler = Handler::new(token, guild_id, overlord_role).await;
+    let handler = Handler::new().await;
 
-    let mut client = Client::builder(&handler.discord_token, intents)
+    let mut client = Client::builder(token, intents)
         .event_handler(handler)
         .await
         .expect("Error creating a client");
