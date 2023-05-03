@@ -12,5 +12,20 @@ model user {
   id              BigInt  @id(map: "newtable_pk") @default(autoincrement())
   username        String  @db.VarChar
   reputation      Float @default(100.0)
-  discord_user_id String  @db.VarChar
+  sent_kudos      kudos[] @relation("sent_kudos")
+  received_kudos  kudos[] @relation("received_kudos")
+  discord_user_id String  @db.VarChar @unique
+
+  @@unique([id, discord_user_id])
+}
+
+model kudos {
+  id              BigInt  @id(map: "kudos_pk") @default(autoincrement())
+  from            user  @relation(fields: [from_user_id, from_discord_id], references: [id, discord_user_id], name:"sent_kudos")
+  from_user_id    BigInt
+  from_discord_id String
+  to              user @relation(fields: [to_user_id, to_discord_id], references: [id, discord_user_id], name: "received_kudos")
+  to_user_id      BigInt
+  to_discord_id   String
+  timestamp DateTime @default(now())
 }

@@ -1,9 +1,7 @@
+use super::command::{AdminCommand, CommandContext};
+use crate::{responses, utils::role::GUILD_ID};
 use async_trait::async_trait;
 use serenity::utils::MessageBuilder;
-
-use crate::{responses, utils::role::GUILD_ID};
-
-use super::command::{AdminCommand, CommandContext};
 
 pub struct Command;
 

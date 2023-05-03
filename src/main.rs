@@ -3,27 +3,27 @@ mod prisma;
 mod responses;
 mod utils;
 
-use std::env;
-
-use prisma::PrismaClient;
-use serenity::async_trait;
-use serenity::model::application::interaction::Interaction;
-use serenity::model::gateway::Ready;
-use serenity::model::id::GuildId;
-use serenity::model::prelude::interaction::InteractionResponseType;
-use serenity::prelude::*;
-
 use crate::{
     commands::command::{CommandContext, UserCommand},
     utils::role::{identify_role, UserRole, GUILD_ID},
 };
+use prisma::PrismaClient;
+use serenity::{
+    async_trait,
+    model::{
+        application::interaction::Interaction, gateway::Ready, id::GuildId,
+        prelude::interaction::InteractionResponseType,
+    },
+    prelude::*,
+};
+use std::env;
 
 struct Handler {
     client: PrismaClient,
 }
 
 impl Handler {
-    pub async fn new() -> Self {
+    pub async fn new() -> Handler {
         Self {
             client: PrismaClient::_builder().build().await.unwrap(),
         }
@@ -51,13 +51,13 @@ macro_rules! register_slash_commands {
 
 async fn register_commands(ctx: &Context, guild_id: GuildId) {
     let commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
-        register_slash_commands!(commands, [me, add_members]);
+        register_slash_commands!(commands, [me, add_members, give_kudos]);
         commands
     })
     .await;
     println!(
-        "I now have the following guild slash commands: {:#?}",
-        commands
+        "I now have {:#?} guild slash commands",
+        commands.unwrap().len()
     );
 }
 
@@ -92,10 +92,15 @@ impl EventHandler for Handler {
                 &ctx.http,
             );
             println!(
-                "Received command interaction: {:#?} with options: {:#?}",
-                command.data.name, command.data.options
+                "Received command interaction: {:#?} with {:#?} options",
+                command.data.name,
+                command.data.options.len()
             );
-            let content = run_command!(command.data.name, command_context, [me, add_members]);
+            let content = run_command!(
+                command.data.name,
+                command_context,
+                [me, add_members, give_kudos]
+            );
             if let Err(why) = command
                 .create_interaction_response(&ctx.http, |response| {
                     response
@@ -111,7 +116,6 @@ impl EventHandler for Handler {
 
     async fn ready(&self, ctx: Context, ready: Ready) {
         println!("{} is connected!", ready.user.name);
-
         register_commands(&ctx, *GUILD_ID).await;
     }
 }
