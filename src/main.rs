@@ -57,8 +57,8 @@ async fn register_commands(ctx: &Context, guild_id: GuildId) {
     })
     .await;
     println!(
-        "I now have the following guild slash commands: {:#?}",
-        commands
+        "I now have {:#?} guild slash commands",
+        commands.unwrap().len()
     );
 }
 
@@ -93,8 +93,9 @@ impl EventHandler for Handler {
                 &ctx.http,
             );
             println!(
-                "Received command interaction: {:#?} with options: {:#?}",
-                command.data.name, command.data.options
+                "Received command interaction: {:#?} with {:#?} options",
+                command.data.name,
+                command.data.options.len()
             );
             let content = run_command!(
                 command.data.name,

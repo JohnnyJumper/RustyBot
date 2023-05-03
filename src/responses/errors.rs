@@ -30,3 +30,30 @@ pub fn error_retriving_guild_members_message(why: String) -> String {
         .push_italic_safe(why)
         .build()
 }
+
+pub fn general_unknown_error_message(why: String) -> String {
+    MessageBuilder::new()
+        .push("Something went wrong with the following error: \n")
+        .push_bold_line_safe(why)
+        .build()
+}
+
+pub fn only_one_kudos_error_message() -> String {
+    MessageBuilder::new()
+        .push("Only one kudos per day \n")
+        .push_bold_line_safe("Try again in tomorrow")
+        .build()
+}
+
+pub fn unknown_user_error_message() -> String {
+    MessageBuilder::new()
+        .push("Failed to understand the receiver of kudos (unknown user)")
+        .build()
+}
+
+pub fn cannot_increase_your_own_reputation_message() -> String {
+    MessageBuilder::new()
+        .push("I see what you are trying to do here\n")
+        .push_bold_line_safe("This action will be noted!")
+        .build()
+}

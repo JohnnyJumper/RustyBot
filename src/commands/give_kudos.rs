@@ -1,4 +1,11 @@
-use crate::prisma::{self, kudos, user, PrismaClient};
+use crate::{
+    prisma::{self, kudos, user, PrismaClient},
+    responses,
+};
+
+use prisma::kudos::Data as kudosData;
+use prisma::user::Data as userData;
+
 use async_trait::async_trait;
 use prisma_client_rust::{Direction, QueryError};
 use serenity::{
@@ -10,7 +17,6 @@ use serenity::{
         },
         user::User,
     },
-    utils::MessageBuilder,
 };
 
 use super::command::{CommandContext, UserCommand};
@@ -19,7 +25,40 @@ use chrono::{Datelike, TimeZone, Utc};
 pub struct Command;
 
 impl Command {
-    fn unwrap_option(options: &Vec<CommandDataOption>) -> Option<User> {
+    async fn give_kudos(prisma: &PrismaClient, sender: &User, receiver: &User) -> String {
+        let response: String;
+        let db_response = prisma
+            ._batch((
+                prisma.kudos().create(
+                    user::discord_user_id::equals(sender.id.to_string()),
+                    user::discord_user_id::equals(receiver.id.to_string()),
+                    vec![],
+                ),
+                prisma
+                    .user()
+                    .update(
+                        user::discord_user_id::equals(receiver.id.to_string()),
+                        vec![user::reputation::increment(1.0)],
+                    )
+                    .select(user::select!({ reputation })),
+            ))
+            .await;
+
+        match db_response {
+            Ok(data) => {
+                response = responses::general::succesfully_given_kudos_message(
+                    &receiver.name,
+                    data.1.reputation,
+                );
+            }
+            Err(why) => {
+                response = responses::errors::general_unknown_error_message(why.to_string());
+            }
+        }
+        response
+    }
+
+    fn unwrap_options(options: &Vec<CommandDataOption>) -> Option<User> {
         let mut result: Option<User> = None;
         let option = options
             .get(0)
@@ -76,64 +115,29 @@ impl Command {
 #[async_trait]
 impl UserCommand for Command {
     async fn run(context: CommandContext<'async_trait>) -> String {
-        let prisma = &context.client;
-        let options = &context.options;
-        let sender = &context.user;
+        let prisma = context.client;
+        let sender = context.user;
+        let receiver = Command::unwrap_options(&context.options);
+        let response;
 
-        let receiver = Command::unwrap_option(&options);
-        let mut response = MessageBuilder::new();
         match receiver {
             Some(user) => {
-                let receiver = user;
-
+                let receiver = &user;
                 let has_given_kudos_today =
                     Command::has_given_kudos_today(prisma, sender.id.to_string()).await;
 
-                if !has_given_kudos_today {
-                    let db_response = prisma
-                        ._batch((
-                            prisma.kudos().create(
-                                user::discord_user_id::equals(sender.id.to_string()),
-                                user::discord_user_id::equals(receiver.id.to_string()),
-                                vec![],
-                            ),
-                            prisma
-                                .user()
-                                .update(
-                                    user::discord_user_id::equals(receiver.id.to_string()),
-                                    vec![user::reputation::increment(1.0)],
-                                )
-                                .select(user::select!({ reputation })),
-                        ))
-                        .await;
-
-                    match db_response {
-                        Ok(data) => {
-                            response
-                                .push("kudos has been given succesfully to ")
-                                .push_bold_line_safe(receiver.name)
-                                .push("resulting in ")
-                                .push_bold_safe(data.1.reputation)
-                                .push(" reputation");
-                        }
-                        Err(why) => {
-                            response
-                                .push("Something went wrong with the following error: \n")
-                                .push_bold_line_safe(why);
-                        }
-                    }
+                response = if sender.id.eq(&receiver.id) {
+                    responses::errors::cannot_increase_your_own_reputation_message()
+                } else if has_given_kudos_today {
+                    responses::errors::only_one_kudos_error_message()
                 } else {
-                    response
-                        .push("Only one kudos per day \n")
-                        .push_bold_line_safe("Try again in tomorrow");
-                }
+                    Command::give_kudos(prisma, sender, receiver).await
+                };
             }
-            None => {
-                response.push("Failed to understand the receiver of kudos (unknown user)");
-            }
+            None => response = responses::errors::unknown_user_error_message(),
         }
 
-        response.build()
+        response
     }
 
     fn register<'a>(
