@@ -1,13 +1,11 @@
+use super::command::{CommandContext, UserCommand};
 use crate::{
-    prisma::{self, kudos, user, PrismaClient},
+    prisma::{kudos, user, PrismaClient},
     responses,
 };
-
-use prisma::kudos::Data as kudosData;
-use prisma::user::Data as userData;
-
 use async_trait::async_trait;
-use prisma_client_rust::{Direction, QueryError};
+use chrono::{Datelike, TimeZone, Utc};
+use prisma_client_rust::Direction;
 use serenity::{
     builder::CreateApplicationCommand,
     model::{
@@ -18,9 +16,6 @@ use serenity::{
         user::User,
     },
 };
-
-use super::command::{CommandContext, UserCommand};
-use chrono::{Datelike, TimeZone, Utc};
 
 pub struct Command;
 

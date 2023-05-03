@@ -3,21 +3,20 @@ mod prisma;
 mod responses;
 mod utils;
 
-use std::env;
-
-use prisma::PrismaClient;
-use serenity::async_trait;
-use serenity::model::application::interaction::Interaction;
-use serenity::model::gateway::Ready;
-use serenity::model::id::GuildId;
-use serenity::model::id::RoleId;
-use serenity::model::prelude::interaction::InteractionResponseType;
-use serenity::prelude::*;
-
 use crate::{
     commands::command::{CommandContext, UserCommand},
     utils::role::{identify_role, UserRole, GUILD_ID},
 };
+use prisma::PrismaClient;
+use serenity::{
+    async_trait,
+    model::{
+        application::interaction::Interaction, gateway::Ready, id::GuildId,
+        prelude::interaction::InteractionResponseType,
+    },
+    prelude::*,
+};
+use std::env;
 
 struct Handler {
     client: PrismaClient,
@@ -117,7 +116,6 @@ impl EventHandler for Handler {
 
     async fn ready(&self, ctx: Context, ready: Ready) {
         println!("{} is connected!", ready.user.name);
-
         register_commands(&ctx, *GUILD_ID).await;
     }
 }
