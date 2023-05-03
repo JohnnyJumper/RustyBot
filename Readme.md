@@ -24,6 +24,9 @@ The following environment variables are required for Rusty-bot to function prope
 
 - `DISCORD_TOKEN`: Discord bot token
 - `DATABASE_URL`: URL of the external database
+- `GUILD_ID`: Discord guild id to monitor (server id)
+- `BOT_ADMIN_ROLE`: Discord role id for authorized admins
+- `BOT_ROLE`: Discord role id for bots
 
 Add thouse to .env in root folder
 
