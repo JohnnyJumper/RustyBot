@@ -88,11 +88,11 @@ impl UserCommand for Command {
 
                 let db_result = prisma
                     .kudos()
-                    .find_many(vec![kudos::to_discord_id::equals(
+                    .find_many(vec![kudos::from_discord_id::equals(
                         context.user.id.to_string(),
                     )])
                     .order_by(kudos::timestamp::order(direction))
-                    .with(kudos::from::fetch())
+                    .with(kudos::to::fetch())
                     .take(amount)
                     .exec()
                     .await;
@@ -111,16 +111,16 @@ impl UserCommand for Command {
 
                         if kudos.len() == 0 {
                             response
-                                .push("Looks like no one likes you.\n")
-                                .push_italic_line_safe("Yuck, that's hurts");
+                                .push("Looks like you don't like anyone.\n")
+                                .push_italic_line_safe("Yuck, that's lonely");
                         } else {
-                            response.push(format!("| {:<10} | {:<10} |\n", "from", "timestamp"));
+                            response.push(format!("| {:<10} | {:<10} |\n", "to", "timestamp"));
 
                             kudos.iter().for_each(|kudos| {
-                                if let Some(from) = &kudos.from {
+                                if let Some(to) = &kudos.to {
                                     response.push(format!(
                                         "| {:<10} | {:<10} |\n",
-                                        &from.username,
+                                        &to.username,
                                         kudos.timestamp.to_string()
                                     ));
                                 }

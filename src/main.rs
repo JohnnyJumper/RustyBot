@@ -51,7 +51,10 @@ macro_rules! register_slash_commands {
 
 async fn register_commands(ctx: &Context, guild_id: GuildId) {
     let commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
-        register_slash_commands!(commands, [me, add_members, give_kudos, kudos_received]);
+        register_slash_commands!(
+            commands,
+            [me, add_members, give_kudos, kudos_received, kudos_sent]
+        );
         commands
     })
     .await;
@@ -99,7 +102,7 @@ impl EventHandler for Handler {
             let content = run_command!(
                 command.data.name,
                 command_context,
-                [me, add_members, give_kudos, kudos_received]
+                [me, add_members, give_kudos, kudos_received, kudos_sent]
             );
             if let Err(why) = command
                 .create_interaction_response(&ctx.http, |response| {
