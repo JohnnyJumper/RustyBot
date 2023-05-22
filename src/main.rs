@@ -18,6 +18,8 @@ use serenity::{
 };
 use std::env;
 
+pub const DISCORD_RESPONSE_LIMIT: usize = 3997;
+
 struct Handler {
     client: PrismaClient,
 }
@@ -114,11 +116,13 @@ impl EventHandler for Handler {
                 return;
             }
 
-            let content = run_command!(
+            let mut content = run_command!(
                 command.data.name,
                 command_context,
                 [me, add_members, give_kudos, kudos_received, kudos_sent]
             );
+
+            content.truncate(DISCORD_RESPONSE_LIMIT);
 
             if let Err(why) = command
                 .edit_original_interaction_response(&ctx.http, |response| response.content(content))
