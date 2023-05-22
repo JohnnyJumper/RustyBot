@@ -99,17 +99,29 @@ impl EventHandler for Handler {
                 command.data.name,
                 command.data.options.len()
             );
+
+            if let Err(why) = command
+                .create_interaction_response(&ctx.http, |response| {
+                    response
+                        .kind(InteractionResponseType::DeferredChannelMessageWithSource)
+                        .interaction_response_data(|message| {
+                            message.content(responses::general::work_in_progress_message())
+                        })
+                })
+                .await
+            {
+                println!("Cannot defer slash command: {}", why);
+                return;
+            }
+
             let content = run_command!(
                 command.data.name,
                 command_context,
                 [me, add_members, give_kudos, kudos_received, kudos_sent]
             );
+
             if let Err(why) = command
-                .create_interaction_response(&ctx.http, |response| {
-                    response
-                        .kind(InteractionResponseType::ChannelMessageWithSource)
-                        .interaction_response_data(|message| message.content(content))
-                })
+                .edit_original_interaction_response(&ctx.http, |response| response.content(content))
                 .await
             {
                 println!("Cannot respond to slash command: {}", why);

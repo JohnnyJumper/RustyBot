@@ -25,3 +25,10 @@ pub fn succesfully_given_kudos_message(name: &String, reputation: f64) -> String
         .push(" reputation")
         .build()
 }
+
+pub fn work_in_progress_message() -> String {
+    MessageBuilder::new()
+        .push_line("I am working on it")
+        .push_italic_line("Come back later, I will edit this message with the result.")
+        .build()
+}
