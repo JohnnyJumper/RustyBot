@@ -18,7 +18,7 @@ use serenity::{
 };
 use std::env;
 
-pub const DISCORD_RESPONSE_LIMIT: usize = 3997;
+pub const DISCORD_RESPONSE_LIMIT: usize = 1996;
 
 struct Handler {
     client: PrismaClient,
