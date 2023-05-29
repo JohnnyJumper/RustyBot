@@ -114,13 +114,17 @@ impl UserCommand for Command {
                                 .push("Looks like no one likes you.\n")
                                 .push_italic_line_safe("Yuck, that's hurts");
                         } else {
-                            response.push(format!("| {:<10} | {:<10} |\n", "from", "timestamp"));
+                            response.push(format!(
+                                "| {:<30} | {:<30} | {:<30} |\n",
+                                "from", "message", "timestamp"
+                            ));
 
                             kudos.iter().for_each(|kudos| {
                                 if let Some(from) = &kudos.from {
                                     response.push(format!(
-                                        "| {:<10} | {:<10} |\n",
+                                        "| {:<30} | {:<30} | {:<30} |\n",
                                         &from.username,
+                                        kudos.message,
                                         kudos.timestamp.to_string()
                                     ));
                                 }

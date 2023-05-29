@@ -27,5 +27,6 @@ model kudos {
   to              user @relation(fields: [to_user_id, to_discord_id], references: [id, discord_user_id], name: "received_kudos")
   to_user_id      BigInt
   to_discord_id   String
-  timestamp DateTime @default(now())
+  timestamp       DateTime @default(now())
+  message         String
 }
