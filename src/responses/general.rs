@@ -16,13 +16,14 @@ pub fn me_command_response(username: &String, reputation: &String) -> String {
         .build()
 }
 
-pub fn succesfully_given_kudos_message(name: &String, reputation: f64) -> String {
+pub fn succesfully_given_kudos_message(name: &String, reputation: f64, message: &String) -> String {
     MessageBuilder::new()
         .push("kudos has been given succesfully to ")
         .push_bold_line_safe(name)
         .push("resulting in ")
         .push_bold_safe(reputation)
-        .push(" reputation")
+        .push_line(" reputation with message:")
+        .push(message)
         .build()
 }
 
