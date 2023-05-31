@@ -45,12 +45,6 @@ pub fn only_one_kudos_error_message() -> String {
         .build()
 }
 
-pub fn unknown_user_error_message() -> String {
-    MessageBuilder::new()
-        .push("Failed to understand the receiver of kudos (unknown user)")
-        .build()
-}
-
 pub fn cannot_increase_your_own_reputation_message() -> String {
     MessageBuilder::new()
         .push("I see what you are trying to do here\n")

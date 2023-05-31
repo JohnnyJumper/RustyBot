@@ -2,6 +2,8 @@ pub struct Command;
 use std::{fmt, vec};
 
 use async_trait::async_trait;
+use chrono::{DateTime, FixedOffset};
+use comfy_table::{ContentArrangement, Table};
 use prisma_client_rust::Direction;
 use serenity::{
     builder::CreateApplicationCommand,
@@ -12,9 +14,10 @@ use serenity::{
     utils::MessageBuilder,
 };
 
-use crate::prisma::kudos;
-
 use super::command::{CommandContext, UserCommand};
+use crate::prisma::kudos;
+use comfy_table::modifiers::UTF8_ROUND_CORNERS;
+use comfy_table::presets::UTF8_FULL;
 
 #[derive(PartialEq)]
 enum OptionChoice {
@@ -100,7 +103,7 @@ impl UserCommand for Command {
                 match db_result {
                     Ok(kudos) => {
                         response
-                            .push("Here is yours ")
+                            .push("Here is yours up to ")
                             .push(amount)
                             .push(if let OptionChoice::First = choice {
                                 " earliest "
@@ -114,21 +117,25 @@ impl UserCommand for Command {
                                 .push("Looks like you don't like anyone.\n")
                                 .push_italic_line_safe("Yuck, that's lonely");
                         } else {
-                            response.push(format!(
-                                "| {:<30} | {:<30} | {:<30} |\n",
-                                "to", "message", "timestamp"
-                            ));
+                            let mut table = Table::new();
+                            table
+                                .load_preset(UTF8_FULL)
+                                .apply_modifier(UTF8_ROUND_CORNERS)
+                                .set_header(vec!["Sent To", "Message", "Date"]);
 
                             kudos.iter().for_each(|kudos| {
                                 if let Some(to) = &kudos.to {
-                                    response.push(format!(
-                                        "| {:<30} | {:<30} | {:<30} |\n",
+                                    table.add_row(vec![
                                         &to.username,
                                         &kudos.message,
-                                        kudos.timestamp.to_string()
-                                    ));
+                                        &format!("{}", kudos.timestamp.format("%d/%m/%Y")),
+                                    ]);
                                 }
                             });
+
+                            response.push("```".to_owned());
+                            response.push(table.to_string());
+                            response.push("```".to_owned());
                         }
                     }
                     Err(why) => {
