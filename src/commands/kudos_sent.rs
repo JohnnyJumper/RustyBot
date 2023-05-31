@@ -2,8 +2,7 @@ pub struct Command;
 use std::{fmt, vec};
 
 use async_trait::async_trait;
-use chrono::{DateTime, FixedOffset};
-use comfy_table::{ContentArrangement, Table};
+use comfy_table::Table;
 use prisma_client_rust::Direction;
 use serenity::{
     builder::CreateApplicationCommand,
