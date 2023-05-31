@@ -101,7 +101,7 @@ impl UserCommand for Command {
                 match db_result {
                     Ok(kudos) => {
                         response
-                            .push("Here is yours ")
+                            .push("Here is yours up to ")
                             .push(amount)
                             .push(if let OptionChoice::First = choice {
                                 " earliest "
