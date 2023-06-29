@@ -55,7 +55,14 @@ async fn register_commands(ctx: &Context, guild_id: GuildId) {
     let commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
         register_slash_commands!(
             commands,
-            [me, add_members, give_kudos, kudos_received, kudos_sent]
+            [
+                me,
+                add_members,
+                give_kudos,
+                kudos_received,
+                kudos_sent,
+                contribute
+            ]
         );
         commands
     })
@@ -119,7 +126,14 @@ impl EventHandler for Handler {
             let mut content = run_command!(
                 command.data.name,
                 command_context,
-                [me, add_members, give_kudos, kudos_received, kudos_sent]
+                [
+                    me,
+                    add_members,
+                    give_kudos,
+                    kudos_received,
+                    kudos_sent,
+                    contribute
+                ]
             );
 
             content.truncate(DISCORD_RESPONSE_LIMIT);
