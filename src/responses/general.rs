@@ -33,3 +33,10 @@ pub fn work_in_progress_message() -> String {
         .push_italic_line("Come back later, I will edit this message with the result.")
         .build()
 }
+
+pub fn contribute_message() -> String {
+    MessageBuilder::new()
+        .push_line_safe("Help with contributing by making a PR at: ")
+        .push_bold_line("https://github.com/JohnnyJumper/RustyBot/")
+        .build()
+}
