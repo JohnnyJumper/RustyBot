@@ -11,8 +11,12 @@ use prisma::PrismaClient;
 use serenity::{
     async_trait,
     model::{
-        application::interaction::Interaction, gateway::Ready, id::GuildId,
-        prelude::interaction::InteractionResponseType,
+        application::interaction::{
+            application_command::ApplicationCommandInteraction, Interaction,
+            InteractionResponseType,
+        },
+        gateway::Ready,
+        id::GuildId,
     },
     prelude::*,
 };
@@ -28,6 +32,55 @@ impl Handler {
     pub async fn new() -> Handler {
         Self {
             client: PrismaClient::_builder().build().await.unwrap(),
+        }
+    }
+
+    pub async fn split_and_send_content(
+        content: String,
+        command: ApplicationCommandInteraction,
+        ctx: &Context,
+    ) {
+        println!("splitting and sending?");
+        println!("{}", &content);
+
+        let chars = content.chars();
+        let chars_amount = chars.count();
+        let more_than_one_message = chars_amount > DISCORD_RESPONSE_LIMIT;
+        let mut messages: Vec<String> = Vec::new();
+
+        if more_than_one_message {
+            let mut start = 0;
+            while start < chars_amount {
+                let end = std::cmp::min(start + DISCORD_RESPONSE_LIMIT, chars_amount);
+                messages.push(content[start..end].to_string());
+                start += DISCORD_RESPONSE_LIMIT;
+            }
+            let first_message = messages.remove(0);
+
+            if let Err(why) = command
+                .edit_original_interaction_response(&ctx.http, |response| {
+                    response.content(first_message)
+                })
+                .await
+            {
+                println!("Cannot respond to slash command: {}", why);
+            }
+
+            for next_message in &messages {
+                if let Err(why) = command
+                    .create_followup_message(&ctx.http, |response| response.content(next_message))
+                    .await
+                {
+                    println!("Error sending follow-up message {}", why);
+                }
+            }
+        } else {
+            if let Err(why) = command
+                .edit_original_interaction_response(&ctx.http, |response| response.content(content))
+                .await
+            {
+                println!("Cannot respond to slash command: {}", why);
+            }
         }
     }
 }
@@ -123,7 +176,7 @@ impl EventHandler for Handler {
                 return;
             }
 
-            let mut content = run_command!(
+            let content = run_command!(
                 command.data.name,
                 command_context,
                 [
@@ -135,15 +188,7 @@ impl EventHandler for Handler {
                     contribute
                 ]
             );
-
-            content.truncate(DISCORD_RESPONSE_LIMIT);
-
-            if let Err(why) = command
-                .edit_original_interaction_response(&ctx.http, |response| response.content(content))
-                .await
-            {
-                println!("Cannot respond to slash command: {}", why);
-            }
+            Handler::split_and_send_content(content, command, &ctx).await;
         }
     }
 
