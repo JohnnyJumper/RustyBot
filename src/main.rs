@@ -114,7 +114,8 @@ async fn register_commands(ctx: &Context, guild_id: GuildId) {
                 give_kudos,
                 kudos_received,
                 kudos_sent,
-                contribute
+                contribute,
+                version
             ]
         );
         commands
@@ -185,7 +186,8 @@ impl EventHandler for Handler {
                     give_kudos,
                     kudos_received,
                     kudos_sent,
-                    contribute
+                    contribute,
+                    version
                 ]
             );
             Handler::split_and_send_content(content, command, &ctx).await;
